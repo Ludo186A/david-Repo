@@ -1,0 +1,36 @@
+# Core Pydantic AI
+pydantic-ai[openai,anthropic]==0.0.14
+
+# Database
+asyncpg==0.29.0
+psycopg2-binary==2.9.9
+
+# Configuration
+pydantic-settings==2.5.2
+python-dotenv==1.0.1
+
+# Data Processing
+pandas==2.2.3
+numpy==1.26.4
+
+# Async Support
+asyncio-mqtt==0.16.2
+aiofiles==24.1.0
+
+# Logging and Monitoring
+structlog==24.4.0
+rich==13.9.2
+
+# Testing
+pytest==8.3.3
+pytest-asyncio==0.24.0
+pytest-mock==3.14.0
+
+# Development
+black==24.10.0
+ruff==0.7.4
+mypy==1.13.0
+
+# Optional: Local embedding support
+sentence-transformers==3.2.1
+torch==2.5.1

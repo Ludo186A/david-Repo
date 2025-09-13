@@ -1,0 +1,112 @@
+{
+  "ict_order_blocks": {
+    "description": "Identifies ICT Order Blocks based on price action and volume patterns",
+    "parameters": {
+      "symbol": {"type": "string", "description": "Trading symbol (e.g., EURUSD)"},
+      "timeframe": {"type": "string", "description": "Timeframe (1m, 5m, 15m, 1h, 4h, 1d)"},
+      "start_date": {"type": "date", "description": "Analysis start date"},
+      "end_date": {"type": "date", "description": "Analysis end date"},
+      "min_volume_threshold": {"type": "float", "description": "Minimum volume threshold", "default": 1.5}
+    },
+    "returns": "Array of order block formations with entry/exit levels"
+  },
+  "ict_fair_value_gaps": {
+    "description": "Detects Fair Value Gaps (FVG) in price action",
+    "parameters": {
+      "symbol": {"type": "string", "description": "Trading symbol"},
+      "timeframe": {"type": "string", "description": "Timeframe"},
+      "start_date": {"type": "date", "description": "Analysis start date"},
+      "end_date": {"type": "date", "description": "Analysis end date"},
+      "min_gap_size": {"type": "float", "description": "Minimum gap size in pips", "default": 5.0}
+    },
+    "returns": "Array of FVG formations with fill rates and effectiveness"
+  },
+  "ict_liquidity_sweeps": {
+    "description": "Identifies liquidity sweep patterns and stop hunts",
+    "parameters": {
+      "symbol": {"type": "string", "description": "Trading symbol"},
+      "timeframe": {"type": "string", "description": "Timeframe"},
+      "start_date": {"type": "date", "description": "Analysis start date"},
+      "end_date": {"type": "date", "description": "Analysis end date"},
+      "sweep_threshold": {"type": "float", "description": "Sweep detection threshold", "default": 0.8}
+    },
+    "returns": "Array of liquidity sweep events with success rates"
+  },
+  "ict_market_structure": {
+    "description": "Analyzes overall market structure and trend changes",
+    "parameters": {
+      "symbol": {"type": "string", "description": "Trading symbol"},
+      "timeframe": {"type": "string", "description": "Timeframe"},
+      "start_date": {"type": "date", "description": "Analysis start date"},
+      "end_date": {"type": "date", "description": "Analysis end date"},
+      "structure_type": {"type": "string", "description": "Structure type (BOS, CHoCH)", "default": "both"}
+    },
+    "returns": "Market structure analysis with trend changes and confirmations"
+  },
+  "ict_session_analysis": {
+    "description": "Performs session-based analysis (London, New York, Asian)",
+    "parameters": {
+      "symbol": {"type": "string", "description": "Trading symbol"},
+      "session": {"type": "string", "description": "Trading session (london, newyork, asian, all)"},
+      "start_date": {"type": "date", "description": "Analysis start date"},
+      "end_date": {"type": "date", "description": "Analysis end date"},
+      "include_overlaps": {"type": "boolean", "description": "Include session overlaps", "default": true}
+    },
+    "returns": "Session performance statistics and optimal trading windows"
+  },
+  "ict_premium_discount": {
+    "description": "Calculates premium and discount zones relative to equilibrium",
+    "parameters": {
+      "symbol": {"type": "string", "description": "Trading symbol"},
+      "timeframe": {"type": "string", "description": "Timeframe"},
+      "start_date": {"type": "date", "description": "Analysis start date"},
+      "end_date": {"type": "date", "description": "Analysis end date"},
+      "lookback_periods": {"type": "integer", "description": "Lookback periods for calculation", "default": 50}
+    },
+    "returns": "Premium/discount zone analysis with reversal probabilities"
+  },
+  "ict_institutional_candles": {
+    "description": "Identifies institutional candle patterns and their effectiveness",
+    "parameters": {
+      "symbol": {"type": "string", "description": "Trading symbol"},
+      "timeframe": {"type": "string", "description": "Timeframe"},
+      "start_date": {"type": "date", "description": "Analysis start date"},
+      "end_date": {"type": "date", "description": "Analysis end date"},
+      "min_body_ratio": {"type": "float", "description": "Minimum body to total ratio", "default": 0.7}
+    },
+    "returns": "Institutional candle patterns with follow-through statistics"
+  },
+  "ict_optimal_trade_entry": {
+    "description": "Calculates optimal trade entry points using ICT methodology",
+    "parameters": {
+      "symbol": {"type": "string", "description": "Trading symbol"},
+      "timeframe": {"type": "string", "description": "Timeframe"},
+      "start_date": {"type": "date", "description": "Analysis start date"},
+      "end_date": {"type": "date", "description": "Analysis end date"},
+      "risk_reward_ratio": {"type": "float", "description": "Minimum risk/reward ratio", "default": 2.0}
+    },
+    "returns": "Optimal entry points with risk management levels"
+  },
+  "ict_backtesting_summary": {
+    "description": "Comprehensive backtesting summary across all ICT concepts",
+    "parameters": {
+      "symbol": {"type": "string", "description": "Trading symbol"},
+      "start_date": {"type": "date", "description": "Backtest start date"},
+      "end_date": {"type": "date", "description": "Backtest end date"},
+      "strategy_components": {"type": "array", "description": "ICT components to include", "default": ["order_blocks", "fvg", "liquidity_sweeps"]},
+      "risk_per_trade": {"type": "float", "description": "Risk percentage per trade", "default": 1.0}
+    },
+    "returns": "Complete backtesting results with performance metrics"
+  },
+  "ict_time_based_analysis": {
+    "description": "Analyzes ICT concepts based on specific time windows",
+    "parameters": {
+      "symbol": {"type": "string", "description": "Trading symbol"},
+      "time_window": {"type": "string", "description": "Time window (killzone, lunch, power_hour)"},
+      "start_date": {"type": "date", "description": "Analysis start date"},
+      "end_date": {"type": "date", "description": "Analysis end date"},
+      "timezone": {"type": "string", "description": "Timezone for analysis", "default": "UTC"}
+    },
+    "returns": "Time-based performance analysis and optimal trading periods"
+  }
+}
