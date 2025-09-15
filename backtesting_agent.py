@@ -19,6 +19,9 @@ from models import (
     SQLFunction
 )
 from dependencies import SharedDependencies
+from ollama_health import check_ollama_status
+from embedding_service import get_embeddings
+from connection_manager import get_connection_status, validate_external_ssd_setup
 
 logger = logging.getLogger(__name__)
 
@@ -477,6 +480,198 @@ async def process_coordinator_request(
             ),
             error_details=f"Processing error: {str(e)}"
         )
+
+@backtesting_agent.tool
+async def check_ollama_health(ctx: RunContext[SharedDependencies]) -> str:
+    """
+    Check Ollama service health and model availability for ICT backtesting.
+    
+    Returns:
+        Formatted health status report
+    """
+    try:
+        status = await check_ollama_status()
+        
+        # Format status report
+        overall = status["overall_status"].upper()
+        emoji = {"OPTIMAL": "🟢", "PARTIAL": "🟡", "DEGRADED": "🟠", "FAILED": "🔴"}.get(overall, "❓")
+        
+        report = f"{emoji} Ollama Status: {overall}\n\n"
+        
+        # Health details
+        health = status["ollama_health"]
+        health_emoji = "✅" if health["is_healthy"] else "❌"
+        report += f"Service Health: {health_emoji}\n"
+        report += f"• Response time: {health['response_time']:.2f}s\n"
+        report += f"• Models available: {health['models_available']}\n"
+        
+        if health["error_message"]:
+            report += f"• Error: {health['error_message']}\n"
+        
+        # Required models
+        report += "\nRequired Models:\n"
+        for model, available in status["required_models"].items():
+            model_emoji = "✅" if available else "❌"
+            report += f"• {model}: {model_emoji}\n"
+        
+        # Embedding test
+        embedding = status["embedding_test"]
+        embed_emoji = "✅" if embedding["success"] else "❌"
+        report += f"\nEmbedding Test: {embed_emoji}\n"
+        if embedding["success"]:
+            report += f"• Dimensions: {embedding['dimensions']}/{embedding['expected_dimensions']}\n"
+            report += f"• Generation time: {embedding['generation_time']:.2f}s\n"
+        
+        # Recommendations
+        if status["recommendations"]:
+            report += "\nRecommendations:\n"
+            for rec in status["recommendations"]:
+                report += f"• {rec}\n"
+        
+        return report
+        
+    except Exception as e:
+        logger.error(f"Ollama health check failed: {e}")
+        return f"❌ Health check failed: {str(e)}"
+
+@backtesting_agent.tool
+async def test_embedding_generation(
+    ctx: RunContext[SharedDependencies], 
+    text: str = "ICT market structure analysis test"
+) -> str:
+    """
+    Test embedding generation for RAG operations.
+    
+    Args:
+        text: Text to generate embeddings for
+    
+    Returns:
+        Formatted embedding test results
+    """
+    try:
+        start_time = time.time()
+        embeddings = await get_embeddings(text)
+        generation_time = time.time() - start_time
+        
+        if embeddings:
+            return (f"✅ Embedding generation successful!\n"
+                   f"• Text: '{text}'\n"
+                   f"• Dimensions: {len(embeddings)}\n"
+                   f"• Generation time: {generation_time:.2f}s\n"
+                   f"• Model: nomic-embed-text")
+        else:
+            return f"❌ Embedding generation failed for text: '{text}'"
+            
+    except Exception as e:
+        logger.error(f"Embedding test failed: {e}")
+        return f"❌ Embedding test error: {str(e)}"
+
+@backtesting_agent.tool
+async def check_external_ssd_status(ctx: RunContext[SharedDependencies]) -> str:
+    """
+    Check external SSD connection status for Ollama and Supabase services.
+    
+    Returns:
+        Formatted external SSD status report
+    """
+    try:
+        status = await get_connection_status()
+        
+        # Format status report
+        overall = status["overall_status"].upper()
+        emoji_map = {
+            "OPTIMAL": "🟢",
+            "DATABASE_ONLY": "🟡", 
+            "LLM_ONLY": "🟠",
+            "SSD_DISCONNECTED": "🔴",
+            "SERVICES_UNAVAILABLE": "💥"
+        }
+        emoji = emoji_map.get(overall, "❓")
+        
+        report = f"{emoji} External SSD Status: {overall}\n\n"
+        
+        # SSD Mount Status
+        ssd = status["external_ssd"]
+        ssd_emoji = "✅" if ssd["mounted"] else "❌"
+        report += f"SSD Mount: {ssd_emoji}\n"
+        report += f"• Ollama path: {ssd['ollama_path']}\n"
+        report += f"• Supabase path: {ssd['supabase_path']}\n\n"
+        
+        # Service Status
+        services = status["services"]
+        
+        # Ollama
+        ollama_emoji = "✅" if services["ollama"]["available"] else "❌"
+        report += f"Ollama Service: {ollama_emoji}\n"
+        report += f"• Host: {services['ollama']['host']}\n"
+        report += f"• Model: {services['ollama']['model']}\n\n"
+        
+        # Supabase
+        supabase_emoji = "✅" if services["supabase"]["available"] else "❌"
+        report += f"Supabase Database: {supabase_emoji}\n"
+        report += f"• Port: {services['supabase']['port']}\n"
+        report += f"• Connection: {services['supabase']['database_url']}\n\n"
+        
+        # Health Check Info
+        health = status["health_check"]
+        if health["last_check"]:
+            import datetime
+            check_time = datetime.datetime.fromtimestamp(health["last_check"])
+            report += f"Last Check: {check_time.strftime('%H:%M:%S')}\n"
+        
+        # Errors
+        if health["errors"]:
+            report += "\nErrors:\n"
+            for service, error in health["errors"].items():
+                report += f"• {service}: {error}\n"
+        
+        return report
+        
+    except Exception as e:
+        logger.error(f"External SSD status check failed: {e}")
+        return f"❌ SSD status check failed: {str(e)}"
+
+@backtesting_agent.tool
+async def validate_ssd_setup(ctx: RunContext[SharedDependencies]) -> str:
+    """
+    Validate that external SSD setup is ready for ICT backtesting operations.
+    
+    Returns:
+        Validation results and recommendations
+    """
+    try:
+        is_valid = await validate_external_ssd_setup()
+        
+        if is_valid:
+            return ("✅ External SSD setup is valid!\n"
+                   "• SSD is mounted and accessible\n"
+                   "• Supabase database is connected (port 54334)\n"
+                   "• System is ready for ICT backtesting operations")
+        else:
+            status = await get_connection_status()
+            
+            report = "❌ External SSD setup validation failed\n\n"
+            report += "Issues found:\n"
+            
+            if not status["external_ssd"]["mounted"]:
+                report += "• External SSD is not mounted at /Volumes/Extreme SSD\n"
+            
+            if not status["services"]["supabase"]["available"]:
+                report += "• Supabase database is not accessible on port 54334\n"
+            
+            if not status["services"]["ollama"]["available"]:
+                report += "• Ollama service is not running (optional but recommended)\n"
+            
+            report += "\nRecommendations:\n"
+            report += "• Ensure external SSD is connected and mounted\n"
+            report += "• Start Supabase services from /Volumes/Extreme SSD/ict_project_2/supabase\n"
+            report += "• Verify database is accessible on localhost:54334\n"
+            
+            return report
+            
+    except Exception as e:
+        logger.error(f"SSD setup validation failed: {e}")
+        return f"❌ Setup validation error: {str(e)}"
 
 # Convenience function to create backtesting agent with dependencies
 def create_backtesting_agent(deps: SharedDependencies) -> Agent:

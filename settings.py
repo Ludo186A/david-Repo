@@ -13,10 +13,14 @@ class Settings(BaseSettings):
         extra="ignore"
     )
     
-    # Database Configuration
+    # Database Configuration (External SSD Supabase)
     database_url: str = Field(
-        default="postgresql://supabase_admin:postgres@localhost:54334/postgres",
-        description="PostgreSQL database connection URL"
+        default="postgresql://postgres:postgres@localhost:54334/postgres",
+        description="PostgreSQL database connection URL for external SSD Supabase"
+    )
+    supabase_base_path: str = Field(
+        default="/Volumes/Extreme SSD/ict_project_2/supabase",
+        description="Supabase installation path on external SSD"
     )
     database_pool_min_size: int = Field(default=5, description="Minimum connection pool size")
     database_pool_max_size: int = Field(default=20, description="Maximum connection pool size")
@@ -25,9 +29,12 @@ class Settings(BaseSettings):
     # LLM Provider Configuration
     llm_provider: str = Field(default="ollama", description="Primary LLM provider")
     
-    # Ollama Configuration
+    # Ollama Configuration (from INITIALOLLAMA.MD)
+    ollama_base_path: str = Field(default="/Volumes/Extreme SSD/ollama", description="Ollama installation path")
     ollama_host: str = Field(default="http://localhost:11434", description="Ollama server URL")
-    ollama_model: str = Field(default="llama3.1", description="Ollama model name")
+    ollama_model: str = Field(default="llama3.2", description="Ollama model name for reasoning")
+    ollama_embedding_model: str = Field(default="nomic-embed-text", description="Ollama embedding model")
+    ollama_timeout: int = Field(default=30, description="Ollama request timeout in seconds")
     
     # OpenAI Configuration (fallback)
     openai_api_key: Optional[str] = Field(default=None, description="OpenAI API key")
@@ -38,10 +45,15 @@ class Settings(BaseSettings):
     anthropic_api_key: Optional[str] = Field(default=None, description="Anthropic API key")
     anthropic_model: str = Field(default="claude-3-5-sonnet-20241022", description="Anthropic model name")
     
-    # RAG Configuration
+    # RAG Configuration (enhanced for Ollama integration)
     rag_embedding_provider: str = Field(default="ollama", description="Embedding provider")
     rag_embedding_model: str = Field(default="nomic-embed-text", description="Embedding model name")
     rag_vector_dimensions: int = Field(default=768, description="Vector embedding dimensions")
+    
+    # Performance Configuration (from INITIALOLLAMA.MD)
+    max_retries: int = Field(default=3, description="Maximum retry attempts for failed operations")
+    health_check_interval: int = Field(default=60, description="Health check interval in seconds")
+    performance_threshold: float = Field(default=5.0, description="Response time threshold in seconds")
     
     # Application Configuration
     log_level: str = Field(default="INFO", description="Logging level")

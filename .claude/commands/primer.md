@@ -4,7 +4,7 @@ Use the command `tree` to get an understanding of the project structure.
 
 Start with reading the CLAUDE.md file if it exists to get an understanding of the project.
 
-Read the README.md file to get an understanding of the project.
+Read the README.md file to get an understanding of the project./primer
 
 Read key files in the src/ or root directory
 

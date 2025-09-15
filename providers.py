@@ -36,11 +36,25 @@ def get_llm_model(model_preference: str = None) -> ModelType:
         return _get_fallback_model(settings, exclude=provider)
 
 def _get_ollama_model(settings) -> OllamaModel:
-    """Initialize Ollama model with configuration."""
+    """Initialize Ollama model with enhanced configuration and health check."""
     try:
+        # Import health checker for validation
+        from ollama_health import health_checker
+        
         provider = OllamaProvider(base_url=settings.ollama_host)
         model = OllamaModel(settings.ollama_model, provider=provider)
-        logger.info(f"Initialized Ollama model: {settings.ollama_model}")
+        
+        # Perform basic connectivity check
+        import asyncio
+        try:
+            health_result = asyncio.run(health_checker.check_health())
+            if not health_result.is_healthy:
+                logger.warning(f"Ollama health check failed: {health_result.error_message}")
+                logger.warning("Continuing with model initialization, but performance may be degraded")
+        except Exception as health_error:
+            logger.warning(f"Could not perform health check: {health_error}")
+        
+        logger.info(f"Initialized Ollama model: {settings.ollama_model} at {settings.ollama_host}")
         return model
     except Exception as e:
         logger.error(f"Ollama initialization failed: {e}")
